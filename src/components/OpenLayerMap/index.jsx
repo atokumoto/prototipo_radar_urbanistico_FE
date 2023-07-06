@@ -1,9 +1,11 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable  react/no-array-index-key */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useRef, useState, useContext } from 'react';
 import 'ol/ol.css';
 import Overlay from 'ol/Overlay';
+import axios from 'axios';
 import { Map, View } from 'ol';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { OSM, Vector as VectorSource } from 'ol/source';
@@ -14,7 +16,7 @@ import GeoJSON from 'ol/format/GeoJSON';
 import Select from 'ol/interaction/Select';
 import './styled.css';
 import { useNavigate } from "react-router-dom";
-import { AuthContext} from '../../context/auth';
+import { AuthContext } from '../../context/auth';
 
 function OpenLayerMap() {
   const mapRef = useRef(null);
@@ -22,6 +24,8 @@ function OpenLayerMap() {
   const [content, setContent] = useState('');
   const [sicarNumber, setSicarNumber] = useState('');
   const [coordinates, setCoordinates] = useState([]);
+  const [formulario, setFormulario] = useState([]);
+  const [idSicar, setIdSicar] = useState('');
   const navigate = useNavigate();
   const { sicar } = useContext(AuthContext);
 
@@ -32,9 +36,10 @@ function OpenLayerMap() {
   const overlayRef = useRef(null);
 
   const sendToForm = () => {
-    
+
     localStorage.setItem("sicar", sicarNumber);
     localStorage.setItem("coordinates", coordinates);
+    localStorage.setItem("idSicar", idSicar);
 
     navigate("/formulario");
   }
@@ -45,12 +50,23 @@ function OpenLayerMap() {
     setTimeout(() => {
       const features = selectInstance.getFeatures();
       if (features) {
-
         const attrs = features.item(0);
 
         if (attrs) {
-          const text = ['SICAR:  ', attrs.get('COD_IMOVEL')].join('');
-          setSicarNumber(attrs.get('COD_IMOVEL'));
+          const text = ['SICAR:  ', attrs.get('cod_imovel')].join('');
+          // const staticUrl = 'http://localhost:8000/api/form-get-info-api/';
+          const staticUrl = 'https://ru-be-prototype.onrender.com/api/form-get-info-api/';
+
+          axios.get([staticUrl, attrs.getId()].join(''))
+            .then((response) => {
+              setFormulario(response.data);
+            })
+            .catch((err) => {
+              setFormulario([]);
+              console.log("not found");
+            })
+          setIdSicar(attrs.getId());
+          setSicarNumber(attrs.get('cod_imovel'));
           setCoordinates(attrs.getGeometry().getCoordinates());  // Atualizando o estado com o novo conteúdo
           setContent(text);  // Atualizando o estado com o novo conteúdo
           overlayRef.current.setPosition(e.coordinate);
@@ -96,7 +112,9 @@ function OpenLayerMap() {
 
     const drawSource = new VectorSource({
       format: new GeoJSON(),
-      url: './sicar_area_imovel.geojson',
+      // url: './sicar_area_imovel.geojson',
+      // url: 'http://localhost:8000/api/get-sicar/', 
+      url: 'https://ru-be-prototype.onrender.com/api/get-sicar/',
     });
 
     const drawLayer = new VectorLayer({
@@ -105,7 +123,7 @@ function OpenLayerMap() {
 
     map.addLayer(drawLayer);
     map.addInteraction(selectRef.current);
-    map.on('click',  e => handleMapClick(e));
+    map.on('click', e => handleMapClick(e));
 
     drawSourceRef.current = drawSource;
     /**
@@ -122,6 +140,24 @@ function OpenLayerMap() {
   const handleModeChange = (newMode) => {
     setMode(newMode);
   };
+
+  const renderizarCamposNaoNulos = (objeto) =>
+    Object.entries(objeto).map(([chave, valor]) => {
+      if (valor !== null && typeof valor === 'object') {
+        if (Object.values(valor).every((v) => v === null)) {
+          return null;
+        }
+        return renderizarCamposNaoNulos(valor);
+      }
+      if (valor !== null) {
+        if(chave.startsWith('id'))
+          return null;
+        return <p key={chave}>{chave}: {valor}</p>;
+      }
+      return null;
+    });
+
+
 
   return (
     <div>
@@ -140,6 +176,14 @@ function OpenLayerMap() {
         <div id="popup" className="ol-popup" ref={containerRef}>
           <a href="#" id="popup-closer" className="ol-popup-closer" ref={closerRef} onClick={handleCloseClick}> </a>
           <div id="popup-content"> {content} </div>
+          <div className="popup-form-container">
+            {formulario.map((item, index) => (
+              <div key={index}>
+                {renderizarCamposNaoNulos(item)}
+              </div>
+            ))}
+
+          </div>
           {content && (<div className='send-form'>
             <Button variant="contained" color='secondary'
               onClick={sendToForm}>Editar</Button>
