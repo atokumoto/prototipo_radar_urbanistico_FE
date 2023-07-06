@@ -5,7 +5,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
 
-import React, { useState } from "react";
+import React, { useState, useRef} from "react";
 import axios from 'axios';
 import './styled.css'
 import { v4 as uuid } from 'uuid';
@@ -21,9 +21,13 @@ function Formulario() {
   const [dataDocumento, setDataDocumento] = useState("");
   const codSicar = localStorage.getItem("sicar");
   const coordinates = localStorage.getItem("coordinates");
+  const idSicar = localStorage.getItem("idSicar");
+
   const [addButton, setAddButton] = useState(false);
   const [areaAnalise, setAreaAnalise] = useState("");
   const [submitButton, setSubmitButton] = useState(false);
+  const form = useRef(formulario);
+
 
   const navigate = useNavigate();
   const variaveis = {
@@ -39,9 +43,9 @@ function Formulario() {
         cpf_requerente: "CPF da parte Requerente",
         numero_carta: "Nº da Carta Precatório na Origem",
         nomde_advogado: "Nome do Advogado",
-        OAB: "OAB",
+        oab: "OAB",
         documento_delegacia: "Nº do Documento na Delegacia",
-        CDA: "CDA",
+        cda: "CDA",
         classe: "Classe",
         area: "Área",
         assunto: "Assunto",
@@ -67,14 +71,14 @@ function Formulario() {
         bairro: "Bairro",
         regiao: "Regiao",
         denominacao_imovel: "Denominação do Imóvel",
-        codigo_INCRA: "Código INCRA",
-        SICAR: "SICAR",
-        SICAR_SP: "SICAR-SP",
+        codigo_incra: "Código INCRA",
+        sicar: "SICAR",
+        sicar_sp: "SICAR-SP",
         proprietario: "Proprietário",
         vendedor: "Vendedor",
         forma_aquisicao: "Forma de Aquisição",
         data_transacao: "Data do registro da Transação",
-        CCIR: "CCIR",
+        ccir: "CCIR",
       },
     },
     oficio: {
@@ -97,9 +101,9 @@ function Formulario() {
       options: {
         cpf_proprietario: "CPF do Proprietário",
         area_imovel: "Área do Imóvel",
-        CCIR: "CCIR",
+        ccir: "CCIR",
         unidade: "Unidade",
-        CNPJ: "CNPJ",
+        cnpj: "CNPJ",
         telefone_contato: "Telefone de Contato",
         email_contato: "E-mail de Contato",
         possui_planta_parcelamento: "Possui Planta de Parcelamento",
@@ -148,7 +152,7 @@ function Formulario() {
         data_publicacao_notificacao:
           "Data de publicação da notificação em boletim oficial (quando houver)",
         recurso_notificacao: "Recurso de Notificação",
-        processo_REURB: "Processo de REURB (mestre)",
+        processo_reurb: "Processo de REURB (mestre)",
       },
     },
     boletim_oficial: {
@@ -175,7 +179,7 @@ function Formulario() {
         AIA: "Auto de Infração Ambiental (AIA)",
       },
     },
-    IBGE: {
+    ibge: {
       label: "IBGE",
       options: {
         aglomerado_subnormal: "Aglomerado subnormal",
@@ -243,28 +247,58 @@ function Formulario() {
     navigate("/map");
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async(event) => {
     const docs = {};
+    const config = { headers: { 'content-type': 'multipart/form-data' } };  // Settings do formData
     event.preventDefault();
+
     if (documento !== "" && variavel !== "" && inputValue !== "" && areaAnalise !== "") {
       setSubmitButton(true);
-      // aqui enviar os valores do formulário para o servidor
+      
+  
+      if (formulario.length === 0) {
+        const firstForm = [
+          {
+            documento: documento,
+            nameDocumento: variaveis[documento].label,
+            variavel: variavel,
+            nameVariavel: variaveis[documento].options[variavel],
+            valor: inputValue,
+            referencia: referencia,
+            dataDocumento: dataDocumento,
+            areaAnalise: areaAnalise,
+            id: uuid()
+          }
+        ];
+        form.current = firstForm;
+      }
+      else{
+        form.current = formulario;
+      }
+
       const formData = new FormData();
+      if(selectedFile)
+        formData.append('arquivo', selectedFile);
+      console.log(formData);
 
-      if (selectedFile)
-        formData.append(selectedFile.name, selectedFile);
-
-      for (let i = 0; i < formulario.length; i += 1) {
-        const name = formulario[i].documento;
-        const variable = formulario[i].variavel;
-        const val = formulario[i].valor;
+      // Union of forms
+      for (let i = 0; i < form.current.length; i += 1) {
+        const name = form.current[i].documento;
+        const variable = form.current[i].variavel;
+        const val = form.current[i].valor;
         if (!(name in docs)) {
           docs[name] = {}
         }
         docs[name][variable] = val;
       }
 
-      const jsonList = formulario.map(
+      // Info from map
+      const areaInfo = {
+        // "COD_IMOVEL": codSicar
+        "id_sicar": idSicar
+      };
+
+      const jsonList = form.current.map(
         ({
           areaAnalise,
           dataDocumento,
@@ -275,28 +309,44 @@ function Formulario() {
           "referencia": referencia,
         })
       );
+      const json = { ...areaInfo, ...docs, ...jsonList[0] };
+      console.log(json);
 
-      const json = { ...docs, ...jsonList[0] };
-      console.log(JSON.stringify(json));
-
-      // console.log(jsonList);
-
+      /*
+      Sending all files via formdata
       Object.keys(jsonList).forEach((key) => {
         formData.append(key, jsonList[key]);
       });
-
-      // console.log(formData);
-
-      axios.post('http://localhost:8000/api/form-create/', json)
+      */
+      // const urlForm = 'http://localhost:8000/api/form-create/';
+      // const urlFile = 'http://localhost:8000/api/form-post-file/';
+      const urlForm = 'https://ru-be-prototype.onrender.com/api/form-post-file/';
+      const urlFile = 'https://ru-be-prototype.onrender.com/api/form-post-file/';
+      // Envia json e arquivo
+      axios.post(urlForm, json)
         .then(response => {
-          console.log('Dados enviados com sucesso:', response.data);
-          navigate("/map");
+          // Verifica se o Form Data não é nulo
+          if(formData.entries().next().value){
+            formData.append('id_documento', response.data);
+            axios.post(urlFile, formData, config)
+            .then((res)=>{
+              alert("Dados enviados com sucesso")
+              console.log('Dados enviados com sucesso:', response.data);
+              navigate("/map");
+            })
+            .catch((err) => console.log("File Upload Error"));
+          }
+          else{
+            alert("Dados enviados com sucesso")
+            navigate("/map");
+          }
         })
         .catch(error => {
+          alert('Erro ao enviar os dados');
           console.error('Erro ao enviar os dados:', error.message);
         });
-
     }
+
   };
 
   const handleDocumentoChange = (event) => {
@@ -480,8 +530,9 @@ function Formulario() {
           )}
         </div>
         <div className="novo-file">
-          <label htmlFor="input-file" onChange={(e) => setSelectedFile(e.target.files[0])}>
+          <label htmlFor="input-file">
             <figure id="image-novo-file" alt="icone de anexo" />
+            <input name = "arquivo" id = "input-file" type="file" onChange={(e) => {setSelectedFile(e.target.files[0]);}} /> 
           </label>
           <input type="file" id="input-file" />
           <p> Anexar Arquivo</p>
