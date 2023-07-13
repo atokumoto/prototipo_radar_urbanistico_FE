@@ -1,0 +1,244 @@
+.index{
+    height: 100% !important;
+}
+
+p {
+    margin: 0;
+}
+
+button {
+    
+  cursor: pointer;
+}
+#titulo-formulario {
+    margin: 10px 0 10px 22px;
+}
+
+.form-formulario {
+    border-radius: 10px;
+    width: 90%;
+    height: auto;
+    margin: 50px auto;
+}
+
+#titulo-formulario {
+    font-weight: bolder;
+    margin-bottom: 10px;
+}
+
+.form-box {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    
+    background-color: #EBE3E3;
+    border: 3px solid #EBE3E3;
+}
+
+.form-box,
+.novo-dado,
+.novo-file {
+    border: 3px solid #fff;
+    border-radius: 10px;
+
+    padding: 5px;
+    margin: 5px auto;
+}
+
+.flex-box {
+    display: flex;
+    justify-content: center;
+    width: 1000px;
+    margin: 15px auto;
+    height: 135px;
+
+}
+
+.documento-box,
+.variavel-box,
+.valor-box,
+.referencia-box,
+.data-box,
+.areaAnalise-box {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.documento-box,
+.variavel-box,
+.referencia-box,
+.data-box {
+    width: 250px;
+    margin: 0px 30px 0px 0px;
+}
+
+#valor,
+#areaAnalise {
+    width: 350px;
+
+}
+
+label {
+    font-weight: bolder;
+}
+
+select,
+input {
+    place-self: center;
+    height: 30px;
+    width: 250px;
+}
+
+input[type="date"] {
+    color: #999;
+}
+
+small {
+    font-size: -0.125em;
+    margin-top: 2px;
+}
+
+.novo-file,.novo-dado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #EBE3E3;
+    border: 3px solid #fff;
+}
+.novo-dado{
+    
+    flex-direction: column;
+}
+
+.novo-dado-box{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.novo-file label {
+    cursor: pointer;
+    background-color: #EBE3E3;
+}
+
+.novo-dado button {
+    border: none;
+    background-color: transparent;
+    color: inherit;
+    text-decoration: none;
+    padding: 0;
+}
+
+.novo-file input {
+    display: none;
+}
+
+#image-novo-file {
+    background-image: url(../../static/🦆\ icon\ _attach\ file_.png);
+}
+
+#image-novo-dado {
+    background-image: url(../../static/🦆\ icon\ _add\ circle\ outline_.png);
+}
+
+#image-novo-dado,
+#image-novo-file {
+    background-repeat: no-repeat;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    margin: 0;
+    background-position-x: center;
+    background-position-y: center;
+}
+
+.submit {
+    padding: 5px;
+}
+#disclaim-button-finalizar{
+    float: right;
+    
+    font-style: italic;
+    color: #cc5858;
+    font-size: 0.95rem;
+}
+
+.button-form {
+    width: 170px;
+    height: 40px;
+    background: #E50F0F;
+    border: 3px solid #FFF6F1;
+    border-radius: 10px;
+}
+
+#titulo-janela-avisos {
+    color: #C30000;
+    margin: 0 0 20px 0;
+}
+
+.janela-avisos {
+    background: #D9D9D9;
+    border-radius: 10px;
+    width: 90%;
+    height: auto;
+    margin: 15px auto;
+    padding: 25px 25px 25px 25px;
+}
+
+.inserted-value {
+    color: grey;
+}
+#disclaim-button{
+    font-style: italic;
+    color: #cc5858;
+    font-size: 0.95rem;
+}
+.buttons{
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+@media (max-width: 1100px) {
+
+   
+    .documento-box,
+    .variavel-box,
+    .referencia-box,
+    .data-box,
+    .valor-box,
+    .areaAnalise-box {
+        margin: 0 auto;
+    }
+
+    .flex-box {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+        height: 100%;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    select {
+        place-self: inherit;
+    }
+
+    .form-box {
+        display: grid;
+        grid-template-columns: 1fr;
+        
+    }
+
+    .form-formulario {
+        height: auto;
+    }
+
+    .valor-box,
+    .areaAnalise-box,
+    #valor,
+    #areaAnalise {
+        width: 250px;
+
+    }
+}
